@@ -1,6 +1,6 @@
 import numpy as np
 import math
-from typing import Tuple
+from typing import Tuple, Union
 from numpy.typing import NDArray
 from .types import Tiles
 from functools import partial
@@ -8,12 +8,12 @@ from functools import partial
 # Util functions for creating maps
 
 
-def createEmpty(shape: Tuple[int, int] | int) -> NDArray[int]:
+def createEmpty(shape: Union[Tuple[int, int], int]) -> NDArray[int]:
     """
     Creates an empty map of specified shape
 
     :param shape: Either the height/width of the grid or the side length
-    :type shape: Tuple[int, int] | int
+    :type shape: Union[Tuple[int, int], int]
     :return: An empty map of the given size
     :rtype: NDArray
     """
@@ -23,12 +23,12 @@ def createEmpty(shape: Tuple[int, int] | int) -> NDArray[int]:
     return np.full(shape, Tiles.EMPTY, dtype=np.ubyte)
 
 
-def createN(shape: Tuple[int, int] | int, num_agents: int) -> NDArray[int]:
+def createN(shape: Union[Tuple[int, int], int], num_agents: int) -> NDArray[int]:
     """
     Creates a map of specified shape that is empty except for starting positions for N agents
 
     :param shape: Either the height/width of the grid or the side length
-    :type shape: Tuple[int, int] | int
+    :type shape: Union[Tuple[int, int], int]
     :param num_agents: The number of agents to start with
     :type num_agents: int
     :return: A n-agent battle royale map of the given size

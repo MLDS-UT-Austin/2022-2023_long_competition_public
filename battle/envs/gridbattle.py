@@ -1,6 +1,6 @@
 from gym import spaces
 import numpy as np
-from typing import Tuple
+from typing import Tuple, Union
 from numpy.typing import NDArray
 from collections.abc import MutableSequence, Sequence, Iterable
 from collections import namedtuple
@@ -60,9 +60,9 @@ class GridBattle:
 
     def __init__(self,
                  agents: Sequence[Agent] = (RandomAgent, RandomAgent),
-                 initial_map: NDArray[int] | Sequence[int, int] | int = 8,
-                 vision_window: Sequence[int, int] | int = (5, 5),
-                 attack_window: Sequence[int, int] | int | None = None,
+                 initial_map: Union[NDArray[int], Sequence[int, int], int] = 8,
+                 vision_window: Union[Sequence[int, int], int] = (5, 5),
+                 attack_window: Union[Sequence[int, int], int, None] = None,
                  temperature: float = 1,
                  window_height: int = 560,
                  seed: int = None,
@@ -74,11 +74,11 @@ class GridBattle:
         :param agents: A set of agents to perform their policies in the environment
         :type agents: Sequence[Agent]
         :param initial_map: An initial map (H * W enum-encoded numpy array), a height/width tuple, or a side length int
-        :type initial_map: NDArray[int] | Sequence[int, int] | int
+        :type initial_map: Union[NDArray[int], Sequence[int, int], int]
         :param vision_window: A height/width tuple or side length int that sets cells' H * W vision window dimensions
-        :type vision_window: Sequence[int, int] | int
+        :type vision_window: Union[Sequence[int, int], int]
         :param attack_window: An optional height/width tuple or side length int for cells' attack window dimensions
-        :type attack_window: Sequence[int, int] | int | None
+        :type attack_window: Union[Sequence[int, int], int, None]
         :param temperature: The temperature to sample logit maps at.
         :type temperature: float
         :param window_height: The height of the rendering window in pixels
@@ -161,7 +161,7 @@ class GridBattle:
         :return: A sequence of NDArray observations for each agent.
         :rtype: Sequence[NDArray]
         """
-        agent_observations: MutableSequence[NDArray | None] = [None] * self.n_agents
+        agent_observations: MutableSequence[Union[NDArray, None]] = [None] * self.n_agents
         global_agent_mask: NDArray = self.grid == Tiles.AGENT  # mask of cells belonging to agents Tiles.AGENT
         for rel_agent_id, agent in enumerate(self.agents):
             agent_id = rel_agent_id + Tiles.AGENT  # relative agent id -> de facto agent id
@@ -206,14 +206,14 @@ class GridBattle:
         return value_maps
 
     # checks if a 2d point is a valid point to attack
-    def _valid_cell(self, pos: Iterable | Sequence[int, int] | NDArray[int]) -> bool:
+    def _valid_cell(self, pos: Union[Iterable, Sequence[int, int], NDArray[int]]) -> bool:
         # for axis, axis_length in enumerate(self.grid.shape):
         #     if not 0 <= pos[axis] < axis_length:  # if out of bounds in some axis
         #         return False
 
         return self.grid[tuple(pos)] != Tiles.WALL
 
-    def _set_env_spaces(self, seed: int | None) -> None:
+    def _set_env_spaces(self, seed: Union[int, None]) -> None:
         # the shape of each agent's action
         self.action_spaces: Sequence[gym.Space] = tuple(self._get_action_space(agent, seed) for agent in self.agents)
 
@@ -222,10 +222,10 @@ class GridBattle:
 
     def reset(self,
               *,
-              seed: int | None = None,
+              seed: Union[int, None] = None,
               return_info: bool = False,
-              options: dict | None = None,
-              ) -> Tuple[Sequence[NDArray], dict] | Sequence[NDArray]:
+              options: Union[dict, None] = None,
+              ) -> Union[Tuple[Sequence[NDArray], dict], Sequence[NDArray]]:
         self.grid = np.copy(self.initial_map)  # reset grid
         self.seed = seed
 
@@ -254,7 +254,7 @@ class GridBattle:
         # assert number of actions corresponds with number of agents
         assert len(n_action) == self.n_agents, 'number of actions is different from number of agents!'
 
-        normalized_actions: MutableSequence[NDArray | None] = [None] * self.n_agents
+        normalized_actions: MutableSequence[Union[NDArray, None]] = [None] * self.n_agents
 
         for rel_agent_id, (agent_action, agent) in enumerate(zip(n_action, self.agents)):
             logit_maps = agent_action.astype(np.double)
@@ -381,7 +381,7 @@ class GridBattle:
 
         return n_obs, reward_maps, done, info
 
-    def render(self, mode: str = 'human', fps: int = metadata['render_fps']) -> NDArray | None:
+    def render(self, mode: str = 'human', fps: int = metadata['render_fps']) -> Union[NDArray, None]:
         if self.window is None and mode == 'human':
             pygame.init()
             pygame.display.init()
@@ -425,7 +425,7 @@ class GridBattle:
             pygame.display.quit()
             pygame.quit()
 
-    def run_game(self, max_steps: int | None = None, render_mode: str | None = 'human', fps: int = 2) -> None:
+    def run_game(self, max_steps: Union[int, None] = None, render_mode: Union[str, None] = 'human', fps: int = 2) -> None:
         self.max_timestep = max_steps if max_steps else self.DEFAULT_MAX_TIMESTEP
         n_obs: Sequence[NDArray] = self.reset()
         done = False
@@ -434,7 +434,7 @@ class GridBattle:
             if render_mode:
                 self.render(mode=render_mode, fps=fps)
 
-            n_action: MutableSequence[NDArray | None] = [None] * self.n_agents
+            n_action: MutableSequence[Union[NDArray, None]] = [None] * self.n_agents
 
             for rel_agent_id, agent in enumerate(self.agents):
                 n_action[rel_agent_id] = agent.policy(n_obs[rel_agent_id], self.action_spaces[rel_agent_id], self.observation_spaces[rel_agent_id])
