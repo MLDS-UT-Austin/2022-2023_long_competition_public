@@ -231,8 +231,9 @@ class GridBattle:
 
         self._set_env_spaces(seed)
 
-        self.max_timestep = options['max_timestep'] if isinstance(options, dict) and 'max_timestep' in options else \
-            self.DEFAULT_MAX_TIMESTEP
+        if not self.max_timestep:
+            self.max_timestep = options['max_timestep'] if isinstance(options, dict) and 'max_timestep' in options \
+                else self.DEFAULT_MAX_TIMESTEP
 
         n_obs = self._get_obs()
         info = self._get_info()
